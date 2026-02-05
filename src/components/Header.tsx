@@ -10,6 +10,8 @@ export default function Header() {
 
   const isActive = (path: string) => pathname === path;
 
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
       <div className="container mx-auto px-4">
@@ -17,7 +19,7 @@ export default function Header() {
           <Link href="/" className="flex items-center gap-2 font-bold text-xl text-gray-900">
             <span className="relative w-12 h-12">
   <Image
-    src="/assets/logoterabotics.png"
+    src={`${basePath}/assets/logoterabotics.png`}
     alt="Ícone Tera Robotics"
     fill
     className="object-contain rounded-full"
@@ -30,7 +32,7 @@ export default function Header() {
 
           <nav className="flex items-center gap-1 sm:gap-2">
             <Link
-              href="/"
+              href={`${basePath}/`}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive('/')
                   ? 'bg-orange-100 text-orange-700'
@@ -41,7 +43,7 @@ export default function Header() {
               <span className="hidden sm:inline">Início</span>
             </Link>
             <Link
-              href="/mapa"
+              href={`${basePath}/mapa`}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive('/mapa')
                   ? 'bg-orange-100 text-orange-700'
@@ -52,7 +54,7 @@ export default function Header() {
               <span className="hidden sm:inline">Explorar</span>
             </Link>
             <Link
-              href="/sobre"
+              href={`${basePath}/sobre`}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive('/sobre')
                   ? 'bg-orange-100 text-orange-700'
