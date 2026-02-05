@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import Papa from "papaparse";
 import { AlertCircle, ArrowLeft, Navigation, MapPin } from "lucide-react";
 
 import { CSV_URL } from "@/config/appConfig";
 import { Point } from "@/types/Point";
 
-// --- helper: baixa e converte CSV -> Point[]
 async function fetchPointsFromCsv(url: string): Promise<Point[]> {
   const res = await fetch(url, { cache: "no-store" });
 
@@ -23,7 +21,6 @@ async function fetchPointsFromCsv(url: string): Promise<Point[]> {
 
   const rows = (parsed.data as any[]) ?? [];
 
-  // Ajuste aqui se seus nomes de colunas forem diferentes
   const points: Point[] = rows
     .map((row) => {
       const id = row.id ?? row.ID ?? row.Id;
@@ -39,7 +36,7 @@ async function fetchPointsFromCsv(url: string): Promise<Point[]> {
         return null;
       }
 
-      const point: Point = {
+      return {
         id: String(id),
         title: String(title),
         location: String(location),
@@ -51,16 +48,14 @@ async function fetchPointsFromCsv(url: string): Promise<Point[]> {
         soil: row.soil ? String(row.soil) : "",
         risks: row.risks ? String(row.risks) : "",
         responsavel: row.responsavel ? String(row.responsavel) : "",
-      };
-
-      return point;
+      } as Point;
     })
     .filter(Boolean) as Point[];
 
   return points;
 }
 
-// ✅ obrigatório para rotas dinâmicas com output: "export"
+// ✅ obrigatório no output: export
 export async function generateStaticParams() {
   const points = await fetchPointsFromCsv(CSV_URL);
   return points.map((p) => ({ id: String(p.id) }));
@@ -71,40 +66,10 @@ export default async function PointDetailPage({
 }: {
   params: { id: string };
 }) {
-  let points: Point[] = [];
-
-  try {
-    points = await fetchPointsFromCsv(CSV_URL);
-  } catch (e) {
-    // Em export estático, se isso falhar no build, o job falha.
-    // Aqui é mais para caso rode em dev.
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md p-8">
-          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Erro ao carregar dados
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Não foi possível carregar o CSV agora.
-          </p>
-          <Link
-            href="/mapa"
-            className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar ao Mapa
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
+  const points = await fetchPointsFromCsv(CSV_URL);
   const point = points.find((p) => String(p.id) === String(params.id));
 
   if (!point) {
-    // Você pode usar notFound(); mas vou manter seu layout de erro.
-    // notFound(); // alternativa
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md p-8">
@@ -158,57 +123,6 @@ export default async function PointDetailPage({
                 </p>
               </div>
             </div>
-
-            {(point.categoria || point.periodo) && (
-              <div className="flex flex-wrap gap-2">
-                {point.categoria && (
-                  <span className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
-                    {point.categoria}
-                  </span>
-                )}
-                {point.periodo && (
-                  <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
-                    {point.periodo}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {point.caracteristicas && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Características
-                </h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {point.caracteristicas}
-                </p>
-              </div>
-            )}
-
-            {point.soil && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Solo</h3>
-                <p className="text-gray-700 leading-relaxed">{point.soil}</p>
-              </div>
-            )}
-
-            {point.risks && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Riscos e Integridade
-                </h3>
-                <p className="text-gray-700 leading-relaxed">{point.risks}</p>
-              </div>
-            )}
-
-            {point.responsavel && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Responsável pela Pesquisa
-                </h3>
-                <p className="text-gray-700">{point.responsavel}</p>
-              </div>
-            )}
 
             <div className="pt-4 border-t border-gray-200">
               <a
