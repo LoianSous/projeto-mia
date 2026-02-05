@@ -1,74 +1,116 @@
-'use client';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import Papa from "papaparse";
+import { AlertCircle, ArrowLeft, Navigation, MapPin } from "lucide-react";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Point } from '@/types/Point';
-import { loadPointsFromCsv } from '@/services/loadPointsFromCsv';
-import { CSV_URL } from '@/config/appConfig';
-import { Loader2, AlertCircle, ArrowLeft, Navigation, MapPin } from 'lucide-react';
+import { CSV_URL } from "@/config/appConfig";
+import { Point } from "@/types/Point";
 
-export default function PointDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const pointId = params.id as string;
+// --- helper: baixa e converte CSV -> Point[]
+async function fetchPointsFromCsv(url: string): Promise<Point[]> {
+  const res = await fetch(url, { cache: "no-store" });
 
-  const [point, setPoint] = useState<Point | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadPoint = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const points = await loadPointsFromCsv(CSV_URL);
-        const foundPoint = points.find((p) => p.id === pointId);
-
-        if (!foundPoint) {
-          setError('Ponto não encontrado');
-        } else {
-          setPoint(foundPoint);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : 'Erro ao carregar dados. Tente novamente.'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPoint();
-  }, [pointId]);
-
-  const openInGoogleMaps = () => {
-    if (point) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${point.lat},${point.lng}`;
-      window.open(url, '_blank');
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-orange-600 mx-auto mb-4" />
-          <p className="text-gray-600">Carregando dados...</p>
-        </div>
-      </div>
-    );
+  if (!res.ok) {
+    throw new Error(`Falha ao carregar CSV (${res.status})`);
   }
 
-  if (error || !point) {
+  const csvText = await res.text();
+
+  const parsed = Papa.parse(csvText, {
+    header: true,
+    skipEmptyLines: true,
+  });
+
+  const rows = (parsed.data as any[]) ?? [];
+
+  // Ajuste aqui se seus nomes de colunas forem diferentes
+  const points: Point[] = rows
+    .map((row) => {
+      const id = row.id ?? row.ID ?? row.Id;
+      const title = row.title ?? row.titulo ?? row.nome ?? "";
+      const location = row.location ?? row.localizacao ?? row.local ?? "";
+      const latRaw = row.lat ?? row.latitude;
+      const lngRaw = row.lng ?? row.lon ?? row.longitude;
+
+      const lat = Number(latRaw);
+      const lng = Number(lngRaw);
+
+      if (!id || !title || !location || Number.isNaN(lat) || Number.isNaN(lng)) {
+        return null;
+      }
+
+      const point: Point = {
+        id: String(id),
+        title: String(title),
+        location: String(location),
+        lat,
+        lng,
+        categoria: row.categoria ? String(row.categoria) : "",
+        periodo: row.periodo ? String(row.periodo) : "",
+        caracteristicas: row.caracteristicas ? String(row.caracteristicas) : "",
+        soil: row.soil ? String(row.soil) : "",
+        risks: row.risks ? String(row.risks) : "",
+        responsavel: row.responsavel ? String(row.responsavel) : "",
+      };
+
+      return point;
+    })
+    .filter(Boolean) as Point[];
+
+  return points;
+}
+
+// ✅ obrigatório para rotas dinâmicas com output: "export"
+export async function generateStaticParams() {
+  const points = await fetchPointsFromCsv(CSV_URL);
+  return points.map((p) => ({ id: String(p.id) }));
+}
+
+export default async function PointDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  let points: Point[] = [];
+
+  try {
+    points = await fetchPointsFromCsv(CSV_URL);
+  } catch (e) {
+    // Em export estático, se isso falhar no build, o job falha.
+    // Aqui é mais para caso rode em dev.
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
         <div className="text-center max-w-md p-8">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {error || 'Ponto não encontrado'}
+            Erro ao carregar dados
+          </h2>
+          <p className="text-gray-600 mb-4">
+            Não foi possível carregar o CSV agora.
+          </p>
+          <Link
+            href="/mapa"
+            className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar ao Mapa
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const point = points.find((p) => String(p.id) === String(params.id));
+
+  if (!point) {
+    // Você pode usar notFound(); mas vou manter seu layout de erro.
+    // notFound(); // alternativa
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50">
+        <div className="text-center max-w-md p-8">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Ponto não encontrado
           </h2>
           <p className="text-gray-600 mb-4">
             O sítio arqueológico que você está procurando não foi encontrado.
@@ -84,6 +126,8 @@ export default function PointDetailPage() {
       </div>
     );
   }
+
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${point.lat},${point.lng}`;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
@@ -143,9 +187,7 @@ export default function PointDetailPage() {
 
             {point.soil && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Solo
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Solo</h3>
                 <p className="text-gray-700 leading-relaxed">{point.soil}</p>
               </div>
             )}
@@ -169,13 +211,15 @@ export default function PointDetailPage() {
             )}
 
             <div className="pt-4 border-t border-gray-200">
-              <button
-                onClick={openInGoogleMaps}
+              <a
+                href={googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-colors w-full justify-center font-medium"
               >
                 <Navigation className="w-5 h-5" />
                 Abrir rota no Google Maps
-              </button>
+              </a>
             </div>
           </div>
         </div>
