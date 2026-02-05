@@ -4,6 +4,7 @@ import { Map, BookOpen } from "lucide-react";
 import MapSection from "@/components/MapSection";
 
 export default function Home() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
   return (
     <div className="bg-[#0b0f14] text-white">
       {/* HERO */}
@@ -62,7 +63,7 @@ export default function Home() {
               <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
                 <div className="relative aspect-[16/9]">
                   <Image
-                    src="/assets/p1.png"
+                    src={`${basePath}/assets/p1.png`}
                     alt="Mapa ilustrativo do projeto"
                     fill
                     className="object-cover"
@@ -96,7 +97,7 @@ export default function Home() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[16/10]">
                 <Image
-                  src="/assets/p2.png"
+                  src={`${basePath}/assets/p2.png`}
                   alt="Explorar sítios arqueológicos"
                   fill
                   className="object-cover"
@@ -116,7 +117,7 @@ export default function Home() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[16/10]">
                 <Image
-                  src="/assets/p3.png"
+                  src={`${basePath}/assets/p3.png`}
                   alt="Acessar informações detalhadas"
                   fill
                   className="object-cover"
@@ -165,7 +166,7 @@ export default function Home() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[16/11]">
                 <Image
-                  src="/assets/p1.png"
+                  src={`${basePath}/assets/p4.png`}
                   alt="Registro cultural"
                   fill
                   className="object-cover"

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 export default function SobrePage() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
   return (
     <div className="bg-[#0b0f14] text-white">
       {/* HERO com fundo fixo */}
@@ -51,7 +52,7 @@ export default function SobrePage() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[16/10]">
                 <Image
-                  src="/assets/p7.jpg"
+                  src={`${basePath}/assets/p7.jpg`}
                   alt="Trabalho arqueológico em campo"
                   fill
                   className="object-cover"
@@ -94,7 +95,7 @@ export default function SobrePage() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[16/10]">
                 <Image
-                  src="/assets/p8.jpg"
+                  src={`${basePath}/assets/p8.jpg`}
                   alt="Acervo e vestígios arqueológicos"
                   fill
                   className="object-cover"
@@ -109,7 +110,7 @@ export default function SobrePage() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[4/3]">
                 <Image
-                  src="/assets/p9.png"
+                  src={`${basePath}/assets/p9.png`}
                   alt="Mapa do Centro-Oeste"
                   fill
                   className="object-contain bg-white"
@@ -134,7 +135,7 @@ export default function SobrePage() {
             <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
               <div className="relative aspect-[4/3]">
                 <Image
-                  src="/assets/p10.jpg"
+                  src={`${basePath}/assets/p10.jpg`}
                   alt="Mapa do Mato Grosso do Sul"
                   fill
                   className="object-contain bg-white"
@@ -159,7 +160,7 @@ export default function SobrePage() {
               <div className="relative aspect-[16/10]">
                 {/* pode ser um print do seu mapa depois; por enquanto reutiliza p7/p8/p9 se quiser */}
                 <Image
-                  src="/assets/p11.png"
+                  src={`${basePath}/assets/p7.png`}
                   alt="Região do projeto no mapa"
                   fill
                   className="object-cover"
