@@ -42,7 +42,7 @@ export default function Home() {
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Link
-                href="/#mapa"
+                href="#mapa"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 hover:bg-orange-700 px-6 py-3 font-semibold transition-colors"
               >
                 <Map className="w-5 h-5" />
