@@ -9,12 +9,13 @@ export default function SobrePage() {
       {/* HERO com fundo fixo */}
 <section className="relative">
   <div
-    className="
-      relative h-[320px] sm:h-[420px] md:h-[520px]
-      bg-[url('/assets/background.jpg')]
-      bg-cover bg-center bg-no-repeat bg-fixed
-    "
-  >
+  className="
+    relative h-[320px] sm:h-[420px] md:h-[520px]
+    bg-cover bg-center bg-no-repeat bg-fixed
+  "
+  style={{ backgroundImage: `url(${basePath}/assets/background.jpg)` }}
+>
+
     {/* overlay escuro */}
     <div className="absolute inset-0 bg-black/60" />
 
@@ -160,7 +161,7 @@ export default function SobrePage() {
               <div className="relative aspect-[16/10]">
                 {/* pode ser um print do seu mapa depois; por enquanto reutiliza p7/p8/p9 se quiser */}
                 <Image
-                  src={`${basePath}/assets/p7.png`}
+                  src={`${basePath}/assets/p11.png`}
                   alt="Região do projeto no mapa"
                   fill
                   className="object-cover"
