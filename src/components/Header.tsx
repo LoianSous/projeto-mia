@@ -13,7 +13,7 @@ export default function Header() {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <header className="bg-[#f2c233] border-b border-gray-200 sticky top-0 z-30">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 font-bold text-xl text-gray-900">
