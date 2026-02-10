@@ -174,6 +174,7 @@ export default function MapaClient() {
 
       <div className="flex-1 relative">
         <MapView
+          key="map-page"
           points={filteredPoints}
           selectedPoint={selectedPoint}
           onPointSelect={handlePointSelect}

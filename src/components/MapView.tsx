@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+
 import { Point } from '@/types/Point';
 import { MAP_CONFIG } from '@/config/appConfig';
 
-const customIcon = new L.Icon({
-  iconUrl: `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/iconlocmap.png`,
-  iconSize: [32, 42],
-  iconAnchor: [16, 42],
-  popupAnchor: [0, -42],
-});
-
-
+type BoundsPayload = {
+  minLat: number;
+  minLng: number;
+  maxLat: number;
+  maxLng: number;
+  zoom: number;
+};
 
 interface MapViewProps {
   points: Point[];
@@ -21,6 +21,12 @@ interface MapViewProps {
   onPointSelect: (point: Point) => void;
   center?: { lat: number; lng: number };
   onMapClick?: () => void;
+
+  /** use keys diferentes por página (home/mapa) */
+  mapKey?: string;
+
+  /** chamado quando o mapa muda (para buscar dados por bbox) */
+  onBoundsChange?: (b: BoundsPayload) => void;
 }
 
 function MapController({ center }: { center?: { lat: number; lng: number } }) {
@@ -42,63 +48,112 @@ function MapClickCatcher({ onMapClick }: { onMapClick?: () => void }) {
   return null;
 }
 
-export default function MapView({ points, selectedPoint, onPointSelect, center, onMapClick }: MapViewProps) {
+function BoundsWatcher({ onBoundsChange }: { onBoundsChange?: (b: BoundsPayload) => void }) {
+  const map = useMap();
 
+  const emit = () => {
+    if (!onBoundsChange) return;
+    const b = map.getBounds();
+    onBoundsChange({
+      minLat: b.getSouth(),
+      minLng: b.getWest(),
+      maxLat: b.getNorth(),
+      maxLng: b.getEast(),
+      zoom: map.getZoom(),
+    });
+  };
+
+  useMapEvents({
+    moveend: () => emit(),
+    zoomend: () => emit(),
+  });
+
+  useEffect(() => {
+    emit(); // primeira carga
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return null;
+}
+
+export default function MapView({
+  points,
+  selectedPoint, // (mantido para compatibilidade mesmo se não usar aqui)
+  onPointSelect,
+  center,
+  onMapClick,
+  mapKey = 'map-default',
+  onBoundsChange,
+}: MapViewProps) {
   const mapRef = useRef<L.Map | null>(null);
 
-useEffect(() => {
-  return () => {
-    // IMPORTANT: limpa o container do Leaflet entre mounts (dev/fast refresh)
-    mapRef.current?.remove();
-    mapRef.current = null;
-  };
-}, []);
+  const customIcon = useMemo(
+    () =>
+      new L.Icon({
+        iconUrl: `${process.env.NEXT_PUBLIC_BASE_PATH || ''}/iconlocmap.png`,
+        iconSize: [32, 42],
+        iconAnchor: [16, 42],
+        popupAnchor: [0, -42],
+      }),
+    []
+  );
 
+  // Cleanup robusto (evita “already initialized / being reused” em DEV)
+  useEffect(() => {
+    return () => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      const container = map.getContainer() as any;
+
+      try {
+        map.off();
+        map.remove();
+      } finally {
+        mapRef.current = null;
+        if (container?._leaflet_id) delete container._leaflet_id;
+      }
+    };
+  }, []);
 
   const recenter = () => {
-    if (mapRef.current) {
-      mapRef.current.setView(
-        [MAP_CONFIG.center.lat, MAP_CONFIG.center.lng],
-        MAP_CONFIG.zoom
-      );
-    }
+    mapRef.current?.setView([MAP_CONFIG.center.lat, MAP_CONFIG.center.lng], MAP_CONFIG.zoom);
   };
 
   const goToMyLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          if (mapRef.current) {
-            mapRef.current.setView(
-              [position.coords.latitude, position.coords.longitude],
-              12
-            );
-          }
-        },
-        (error) => {
-          alert('Não foi possível obter sua localização');
-        }
-      );
+    if (!navigator.geolocation) {
+      alert('Geolocalização não suportada neste navegador');
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        mapRef.current?.setView([position.coords.latitude, position.coords.longitude], 12);
+      },
+      () => {
+        alert('Não foi possível obter sua localização');
+      }
+    );
   };
 
   return (
     <div className="relative w-full h-full">
       <MapContainer
+        key={mapKey}
+        ref={mapRef as any}
         center={[MAP_CONFIG.center.lat, MAP_CONFIG.center.lng]}
         zoom={MAP_CONFIG.zoom}
         minZoom={MAP_CONFIG.minZoom}
         maxZoom={MAP_CONFIG.maxZoom}
         className="w-full h-full"
-        ref={mapRef as any}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        <BoundsWatcher onBoundsChange={onBoundsChange} />
         <MapClickCatcher onMapClick={onMapClick} />
-
         <MapController center={center} />
 
         {points.map((point) => (
@@ -109,8 +164,7 @@ useEffect(() => {
             eventHandlers={{
               click: () => onPointSelect(point),
             }}
-          >
-          </Marker>
+          />
         ))}
       </MapContainer>
 
@@ -120,12 +174,7 @@ useEffect(() => {
           className="bg-white hover:bg-gray-50 text-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 transition-colors"
           aria-label="Recentrar mapa"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -134,17 +183,13 @@ useEffect(() => {
             />
           </svg>
         </button>
+
         <button
           onClick={goToMyLocation}
           className="bg-white hover:bg-gray-50 text-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 transition-colors"
           aria-label="Minha localização"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

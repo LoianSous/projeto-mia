@@ -53,6 +53,7 @@ project/
 │  ├─ layout.tsx
 │  ├─ page.tsx
 │  ├─ mapa/
+│  │  ├─ MapaClient.tsx
 │  │  ├─ page.tsx
 │  │  └─ [id]/
 │  │     └─ page.tsx
@@ -120,6 +121,8 @@ project/
 │  │  ├─ Footer.tsx
 │  │  ├─ Header.tsx
 │  │  ├─ MapView.tsx
+│  │  ├─ MapPointModal.tsx
+│  │  ├─ MapSection.tsx
 │  │  ├─ MobileSheet.tsx
 │  │  ├─ PointPanel.tsx
 │  │  └─ PointsList.tsx
@@ -127,6 +130,7 @@ project/
 │  │  └─ appConfig.ts
 │  ├─ services/
 │  │  └─ loadPointsFromCsv.ts
+│  │  └─ loadPointsFromIphan.ts
 │  └─ types/
 │     └─ Point.ts
 ├─ components.json
