@@ -28,16 +28,19 @@ export default function Home() {
               MAPEAMENTO DE INSFRAESTRUTURA ARQUEOLÓGICA
             </p>
 
-            <p className="mt-6 text-base md:text-lg text-white/75 leading-relaxed max-w-3xl">
-              É uma iniciativa que visa organizar, catalogar e disponibilizar informações
-              sobre os sítios arqueológicos localizados entre as cidades de Três Lagoas e
-              Brasilândia, nas margens do Rio Paraná.
+            <p className="mt-6 text-base md:text-lg text-white/75 leading-relaxed max-w-4xl text-justify">
+              🌎 M.I.A. – Mapeamento Interativo Arqueológico
+Uma plataforma digital para descobrir, estudar e preservar o passado do Centro-Oeste e do Mato Grosso do Sul
+A M.I.A. (Mapeamento Interativo Arqueológico) é uma ferramenta digital inovadora desenvolvida para centralizar, organizar e democratizar informações arqueológicas do Brasil, com foco especial no Centro-Oeste e no Mato Grosso do Sul. Integrada a um ambiente online de fácil navegação, sua interface — inspirada em plataformas de mapas interativos como o Google Maps — permite visualizar, explorar e compreender sítios arqueológicos de maneira intuitiva e dinâmica.
             </p>
 
-            <p className="mt-4 text-base md:text-lg text-white/75 leading-relaxed max-w-3xl">
-              Nosso objetivo é criar uma plataforma digital interativa que funcione como um mapa,
-              semelhante ao Google Maps, onde qualquer pessoa possa explorar e aprender sobre o rico
-              patrimônio arqueológico da nossa região.
+            <p className="mt-4 text-base md:text-lg text-white/75 leading-relaxed max-w-4xl text-justify">
+              A plataforma reúne em um só lugar dados dispersos, oferecendo um repositório completo com coordenadas geográficas, imagens, descrições detalhadas, referências bibliográficas e informações contextuais sobre cada sítio registrado. Esse processo de georreferenciamento e sistematização não apenas facilita o trabalho de arqueólogas e arqueólogos em pesquisas, diagnósticos e planejamento de escavações, como também fortalece a preservação do patrimônio histórico-cultural da região.
+Além de apoiar a pesquisa científica, a M.I.A. tem como missão valorizar o patrimônio arqueológico regional, aproximando o público do passado e fomentando a educação científica. Ao oferecer acesso aberto a informações confiáveis e organizadas, o projeto contribui para a popularização do conhecimento histórico, incentiva a conservação dos sítios e reforça o papel da arqueologia no entendimento da formação cultural local.
+            </p>
+            
+            <p className="mt-4 text-base md:text-lg text-white/75 leading-relaxed max-w-4xl text-justify">
+              A M.I.A. nasce como um centro unificado de dados arqueológicos, pensado para modernizar a pesquisa, facilitar o acesso à informação e promover a divulgação científica. É uma ferramenta criada não apenas para especialistas, mas para estudantes, educadores e toda a comunidade, conectando as pessoas às raízes e histórias que moldaram o território.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
