@@ -1,0 +1,14 @@
+{
+  "name": "Projeto M.I.A",
+  "short_name": "M.I.A",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "description": "Mapeamento interativo do patrimônio arqueológico e cultural.",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
