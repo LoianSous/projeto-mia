@@ -25,6 +25,15 @@ const MapView = dynamic(() => import('@/components/MapView'), {
   ),
 });
 
+function normalizeText(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFD")                 // separa letras dos acentos
+    .replace(/[\u0300-\u036f]/g, "")  // remove acentos
+    .replace(/\s+/g, " ")             // normaliza espaços
+    .trim();
+}
+
 export default function MapSection() {
   const [mounted, setMounted] = useState(false);
 
@@ -45,13 +54,16 @@ export default function MapSection() {
   useEffect(() => setMounted(true), []);
 
   const filteredPoints = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return points;
+  const q = normalizeText(query);
+  if (!q) return points;
 
-    return points.filter((p) =>
-      (p.title || '').toLowerCase().includes(q)
-    );
-  }, [points, query]);
+  return points.filter((p) => {
+    const title = normalizeText(p.title || "");
+    const location = normalizeText(p.location || "");
+
+    return title.includes(q) || location.includes(q);
+  });
+}, [points, query]);
 
   const handlePointSelect = (point: Point) => setSelectedPoint(point);
   const handlePointClose = () => setSelectedPoint(null);
