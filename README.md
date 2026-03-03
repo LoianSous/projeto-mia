@@ -115,6 +115,8 @@ project/
 │  └─ utils.ts
 ├─ public/
 │  └─ marker.svg
+│  └─ sw.js
+│  └─ manifest.webmanifest
 ├─ src/
 │  ├─ components/
 │  │  ├─ Filters.tsx

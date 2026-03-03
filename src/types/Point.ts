@@ -10,4 +10,5 @@ export interface Point {
   responsavel?: string;
   categoria?: string;
   periodo?: string;
+  imageUrl?: string;
 }

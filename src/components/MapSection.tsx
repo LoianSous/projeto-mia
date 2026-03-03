@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Loader2, AlertCircle, Map as MapIcon } from 'lucide-react';
+import { Loader2, AlertCircle, Map as MapIcon, Search } from 'lucide-react';
 
 import { Point } from '@/types/Point';
 import MapPointModal from '@/components/MapPointModal';
@@ -29,20 +29,29 @@ export default function MapSection() {
   const [mounted, setMounted] = useState(false);
 
   const [points, setPoints] = useState<Point[]>([]);
-  const [loading, setLoading] = useState(false); // agora é loading por bbox
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
+
+  // ✅ filtro simples por nome
+  const [query, setQuery] = useState('');
 
   // debounce + evitar re-fetch do mesmo bbox
   const debounceRef = useRef<number | null>(null);
   const lastKeyRef = useRef<string>('');
 
-  // ajuste aqui se quiser carregar com zoom mais afastado
   const MIN_ZOOM_TO_LOAD = 7;
 
   useEffect(() => setMounted(true), []);
 
-  const filteredPoints = useMemo(() => points, [points]);
+  const filteredPoints = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return points;
+
+    return points.filter((p) =>
+      (p.title || '').toLowerCase().includes(q)
+    );
+  }, [points, query]);
 
   const handlePointSelect = (point: Point) => setSelectedPoint(point);
   const handlePointClose = () => setSelectedPoint(null);
@@ -50,7 +59,6 @@ export default function MapSection() {
   const handleBoundsChange = (b: BoundsPayload) => {
     if (!mounted) return;
 
-    // evita puxar o "Brasil inteiro" e travar
     if (b.zoom < MIN_ZOOM_TO_LOAD) {
       setPoints([]);
       setError(null);
@@ -58,7 +66,6 @@ export default function MapSection() {
       return;
     }
 
-    // chave simples para evitar bater na API com mudanças mínimas
     const key = [
       b.zoom,
       b.minLat.toFixed(3),
@@ -85,6 +92,9 @@ export default function MapSection() {
         });
 
         setPoints(data);
+
+        // se o ponto selecionado sumir no novo bbox, fecha modal
+        setSelectedPoint((curr) => (curr ? data.find((x) => x.id === curr.id) ?? null : null));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao carregar dados do IPHAN.');
       } finally {
@@ -93,7 +103,6 @@ export default function MapSection() {
     }, 450);
   };
 
-  // UI inicial: enquanto não montou (SSR off do mapa)
   if (!mounted) {
     return (
       <section id="mapa" className="container mx-auto px-4 py-16">
@@ -131,6 +140,29 @@ export default function MapSection() {
             Clique em um marcador para abrir as informações do sítio.
           </p>
         </div>
+
+        {/* ✅ filtro leve (só nome) */}
+        <div className="w-full max-w-sm">
+          <label className="sr-only" htmlFor="map-filter">
+            Buscar sítio
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <input
+              id="map-filter"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar pelo nome do sítio..."
+              className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+
+          {!!query.trim() && (
+            <div className="mt-1 text-xs text-gray-600">
+              {filteredPoints.length} resultado(s) neste zoom
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="relative rounded-2xl border border-gray-200 overflow-hidden bg-white h-[70vh] md:h-[640px]">
@@ -144,7 +176,6 @@ export default function MapSection() {
           onBoundsChange={handleBoundsChange}
         />
 
-        {/* overlays */}
         {loading && (
           <div className="absolute top-4 left-4 z-[1200] bg-white/90 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 shadow">
             Carregando sítios do IPHAN...
@@ -154,6 +185,12 @@ export default function MapSection() {
         {!loading && !error && points.length === 0 && (
           <div className="absolute bottom-4 left-4 z-[1200] bg-white/90 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 shadow">
             Aproxime o zoom para carregar os sítios (zoom ≥ {MIN_ZOOM_TO_LOAD}).
+          </div>
+        )}
+
+        {!!query.trim() && !loading && !error && points.length > 0 && filteredPoints.length === 0 && (
+          <div className="absolute bottom-4 left-4 z-[1200] bg-white/90 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 shadow">
+            Nenhum sítio com esse nome neste zoom.
           </div>
         )}
 

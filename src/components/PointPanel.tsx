@@ -166,6 +166,16 @@ export default function PointPanel({ point, onClose, hideHeader }: PointPanelPro
         </button>
       </div>
       )}
+      {point.imageUrl && (
+  <div className="flex-shrink-0 border-b border-gray-200 bg-gray-100">
+    <img
+      src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}${point.imageUrl}`}
+      alt={`Foto do sítio ${point.title}`}
+      className="w-full h-40 object-cover"
+      loading="lazy"
+    />
+  </div>
+)}
       <div className="flex-shrink-0 border-b border-gray-200 overflow-x-auto">
         <div className="flex min-w-max">
           {tabs.map((tab) => (

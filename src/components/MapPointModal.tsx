@@ -180,12 +180,21 @@ export default function MapPointModal({ point, onClose }: MapPointModalProps) {
           </button>
         </div>
 
-        {/* imagem (placeholder) */}
-        <div className="bg-slate-100 border-b border-slate-200">
-          <div className="h-40 sm:h-48 w-full flex items-center justify-center text-slate-500 text-sm">
-            Espaço para imagem do sítio
-          </div>
-        </div>
+        {/* imagem */}
+<div className="bg-slate-100 border-b border-slate-200">
+  {point.imageUrl ? (
+    <img
+      src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}${point.imageUrl}`}
+      alt={`Foto do sítio ${point.title}`}
+      className="h-40 sm:h-48 w-full object-cover"
+      loading="lazy"
+    />
+  ) : (
+    <div className="h-40 sm:h-48 w-full flex items-center justify-center text-slate-500 text-sm">
+      Sem foto cadastrada para este sítio
+    </div>
+  )}
+</div>
 
         {/* conteúdo */}
         <div className="max-h-[52vh] overflow-y-auto px-4 py-4">

@@ -1,4 +1,5 @@
 import type { Point } from "@/types/Point";
+import { getPhotoByIphanCode } from "@/config/sitePhotos";
 
 type Feature = {
   type: "Feature";
@@ -23,7 +24,7 @@ export async function loadPointsFromIphanBbox(bbox: {
     `${IPHAN_PROXY}?service=WFS&version=1.0.0&request=GetFeature` +
     `&typeName=SICG:sitios&outputFormat=application/json&srsName=EPSG:4326` +
     `&bbox=${minLng},${minLat},${maxLng},${maxLat},EPSG:4326` +
-    `&maxFeatures=5000`; // limite razoável por tela
+    `&maxFeatures=5000`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Proxy IPHAN erro: ${res.status}`);
@@ -34,18 +35,27 @@ export async function loadPointsFromIphanBbox(bbox: {
     const [lng, lat] = f.geometry.coordinates;
     const p = f.properties ?? {};
 
+    const code = p.co_iphan ? String(p.co_iphan) : "";
+    const title = p.identificacao_bem ?? "Sítio arqueológico";
+
     return {
       id: String(p.id_bem ?? f.id ?? `iphan-${i}`),
       lat,
       lng,
-      title: p.identificacao_bem ?? "Sítio arqueológico",
-      location: p.co_iphan ? `Código: ${p.co_iphan}` : "",
+
+      title,
+      location: code ? `Código: ${code}` : "",
+
       categoria: p.ds_tipo_bem ?? "",
       periodo: p.ds_classificacao ?? "",
+
       responsavel: "",
       caracteristicas: p.sintese_bem ?? "",
       soil: "",
       risks: "",
+
+      // ✅ aqui entra a foto
+      imageUrl: getPhotoByIphanCode(code) ?? undefined,
     };
   });
 }
