@@ -152,26 +152,29 @@ self.addEventListener("fetch", (event) => {
 
   // 4) Tiles do OpenStreetMap: cache-first (offline parcial)
   if (url.hostname.endsWith("tile.openstreetmap.org")) {
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(TILES_CACHE);
-        const cached = await cache.match(req);
-        if (cached) return cached;
+  event.respondWith((async () => {
+    const cache = await caches.open(TILES_CACHE);
+    const cached = await cache.match(req);
+    if (cached) return cached;
 
-        try {
-          const res = await fetch(req, { mode: "cors" });
-          if (res.ok) {
-            cache.put(req, res.clone());
-            trimCache(TILES_CACHE, 300);
-          }
-          return res;
-        } catch {
-          return cached || new Response("", { status: 504 });
+    try {
+      // Força SEM credenciais (resolve o CORS)
+      const res = await fetch(req, { mode: "cors", credentials: "omit" });
+
+      if (res.ok) {
+        cache.put(req, res.clone());
+        const keys = await cache.keys();
+        if (keys.length > 300) {
+          await Promise.all(keys.slice(0, keys.length - 300).map((k) => cache.delete(k)));
         }
-      })()
-    );
-    return;
-  }
+      }
+      return res;
+    } catch {
+      return cached || new Response("", { status: 504 });
+    }
+  })());
+  return;
+}
 
   // 5) Outros arquivos do seu domínio: stale-while-revalidate leve
   if (isSameOrigin(url)) {
