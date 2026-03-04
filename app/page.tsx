@@ -73,6 +73,7 @@ Além de apoiar a pesquisa científica, a M.I.A. tem como missão valorizar o pa
                     priority
                   />
                 </div>
+                
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 md:p-8">
@@ -85,9 +86,36 @@ Além de apoiar a pesquisa científica, a M.I.A. tem como missão valorizar o pa
                 </p>
               </div>
             </div>
+            {/* Vídeo demonstrativo (abaixo da seção da imagem + texto) */}
+<div className="mt-10">
+  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 md:p-6">
+    <div className="flex items-center justify-between gap-4 mb-4">
+      <div>
+        <h3 className="text-lg md:text-xl font-bold">Exploração de Sítios Arqueológicos</h3>
+        <p className="text-sm md:text-base text-white/70">
+          Visita da area Alto do Paraná 34.
+        </p>
+      </div>
+    </div>
+
+    {/* tamanho bom: não estoura no desktop, fica central */}
+    <div className="mx-auto w-full max-w-4xl">
+      <div className="relative aspect-video overflow-hidden rounded-xl border border-white/10 bg-black">
+        <video
+          className="absolute inset-0 h-full w-full object-contain"
+          src={`${basePath}/exploracao.mp4`}
+          controls
+          playsInline
+          preload="metadata"
+        />
+      </div>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </section>
+      
 
       {/* O que faz */}
       <section className="container mx-auto px-4 py-14 md:py-20">

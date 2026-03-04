@@ -117,6 +117,7 @@ project/
 │  └─ marker.svg
 │  └─ sw.js
 │  └─ manifest.webmanifest
+│  └─ exploracao.mp4
 ├─ src/
 │  ├─ components/
 │  │  ├─ Filters.tsx
