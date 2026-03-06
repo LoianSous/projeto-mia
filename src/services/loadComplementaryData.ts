@@ -2,7 +2,8 @@ export async function loadComplementaryData() {
   try {
     console.log("🔎 Tentando carregar dados complementares...");
 
-    const res = await fetch("/dados-complementares.json");
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const res = await fetch(`${basePath}/dados-complementares.json`);
 
     console.log("📡 Status da requisição:", res.status);
 

@@ -117,6 +117,7 @@ project/
 │  └─ marker.svg
 │  └─ sw.js
 │  └─ manifest.webmanifest
+│  └─ dados-complementares.json
 │  └─ exploracao.mp4
 ├─ src/
 │  ├─ components/
@@ -134,6 +135,7 @@ project/
 │  ├─ services/
 │  │  └─ loadPointsFromCsv.ts
 │  │  └─ loadPointsFromIphan.ts
+│  │  └─ loadComplementaryData.ts
 │  └─ types/
 │     └─ Point.ts
 ├─ components.json
