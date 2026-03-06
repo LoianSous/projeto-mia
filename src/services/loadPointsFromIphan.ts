@@ -10,7 +10,40 @@ type Feature = {
 
 type FC = { type: "FeatureCollection"; features: Feature[] };
 
+type ComplementarySiteData = {
+  caracteristicas?: string;
+  solo?: string;
+  integridade?: string;
+  pesquisa?: string;
+  responsavel?: string;
+};
+
+type ComplementaryDataMap = Record<string, ComplementarySiteData>;
+
 const IPHAN_PROXY = "https://iphan-proxy.loian-araujo.workers.dev/";
+
+async function loadComplementaryData(): Promise<ComplementaryDataMap> {
+  try {
+    const res = await fetch("/dados-complementares.json");
+
+    if (!res.ok) {
+      console.warn("Não foi possível carregar dados complementares.", res.status);
+      return {};
+    }
+
+    const json = (await res.json()) as ComplementaryDataMap;
+    console.log("JSON carregado:", json);
+    return json;
+  } catch (error) {
+    console.warn("Erro ao carregar dados complementares:", error);
+    return {};
+  }
+}
+
+function extractShortCode(title: string): string {
+  const match = title.match(/\(([A-Z]+[0-9]+)\)/i);
+  return match?.[1]?.toUpperCase() ?? "";
+}
 
 export async function loadPointsFromIphanBbox(bbox: {
   minLat: number;
@@ -26,10 +59,16 @@ export async function loadPointsFromIphanBbox(bbox: {
     `&bbox=${minLng},${minLat},${maxLng},${maxLat},EPSG:4326` +
     `&maxFeatures=5000`;
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Proxy IPHAN erro: ${res.status}`);
+  const [iphanRes, complementaryData] = await Promise.all([
+    fetch(url),
+    loadComplementaryData(),
+  ]);
 
-  const data = (await res.json()) as FC;
+  if (!iphanRes.ok) {
+    throw new Error(`Proxy IPHAN erro: ${iphanRes.status}`);
+  }
+
+  const data = (await iphanRes.json()) as FC;
 
   return (data.features ?? []).map((f, i) => {
     const [lng, lat] = f.geometry.coordinates;
@@ -37,6 +76,18 @@ export async function loadPointsFromIphanBbox(bbox: {
 
     const code = p.co_iphan ? String(p.co_iphan) : "";
     const title = p.identificacao_bem ?? "Sítio arqueológico";
+    const shortCode = extractShortCode(title);
+
+    const extra =
+      complementaryData[shortCode] ??
+      complementaryData[title] ??
+      complementaryData[code] ??
+      {};
+
+    console.log("TITLE:", title);
+    console.log("co_iphan:", code);
+    console.log("shortCode:", shortCode);
+    console.log("extra encontrado:", extra);
 
     return {
       id: String(p.id_bem ?? f.id ?? `iphan-${i}`),
@@ -49,13 +100,13 @@ export async function loadPointsFromIphanBbox(bbox: {
       categoria: p.ds_tipo_bem ?? "",
       periodo: p.ds_classificacao ?? "",
 
-      responsavel: "",
-      caracteristicas: p.sintese_bem ?? "",
-      soil: "",
-      risks: "",
+      responsavel: extra.responsavel ?? "",
+      caracteristicas: extra.caracteristicas ?? p.sintese_bem ?? "",
+      soil: extra.solo ?? "",
+      risks: extra.integridade ?? "",
+      pesquisa: extra.pesquisa ?? "",
 
-      // ✅ aqui entra a foto
       imageUrl: getPhotoByIphanCode(code) ?? undefined,
-    };
+    } as Point;
   });
 }
