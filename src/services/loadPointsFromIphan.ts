@@ -24,7 +24,8 @@ const IPHAN_PROXY = "https://iphan-proxy.loian-araujo.workers.dev/";
 
 async function loadComplementaryData(): Promise<ComplementaryDataMap> {
   try {
-    const res = await fetch("/dados-complementares.json");
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+    const res = await fetch(`${basePath}/dados-complementares.json`);
 
     if (!res.ok) {
       console.warn("Não foi possível carregar dados complementares.", res.status);
